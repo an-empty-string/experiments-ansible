@@ -9,9 +9,9 @@ server {
 {% elif nomad_role == "client" %}
 client {
     enabled = true
-}
 
-server_join {
-    retry_join = ["provider=aws tag_key=NomadRole tag_value=server"]
+    server_join {
+        retry_join = ["provider=aws tag_key=NomadRole tag_value=server"]
+    }
 }
 {% endif %}
