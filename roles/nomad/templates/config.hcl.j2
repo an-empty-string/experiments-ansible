@@ -1,0 +1,17 @@
+data_dir = "/var/lib/nomad"
+bind_addr = "0.0.0.0"
+
+{% if nomad_role == "server" %}
+server {
+    enabled = true
+    bootstrap_expect = 1
+}
+{% elif nomad_role == "client" %}
+client {
+    enabled = true
+}
+
+server_join {
+    retry_join = ["provider=aws tag_key=NomadRole tag_value=server"]
+}
+{% endif %}

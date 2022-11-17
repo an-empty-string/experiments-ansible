@@ -1,0 +1,50 @@
+- name: install unzip
+  apt:
+    name: unzip
+    state: present
+    update_cache: yes
+
+- name: create Nomad directory
+  file:
+    path: /opt/nomad
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: download Nomad
+  unarchive:
+    src: https://releases.hashicorp.com/nomad/{{ nomad_release_version }}/nomad_{{ nomad_release_version }}_linux_arm64.zip
+    dest: /opt/nomad
+    remote_src: yes
+
+- name: write Nomad systemd unit
+  copy:
+    content: |
+      [Unit]
+      Description=Nomad job orchestration service
+
+      [Service]
+      ExecStart=/opt/nomad/nomad agent -config=/etc/nomad.hcl
+
+      [Install]
+      WantedBy=multi-user.target
+
+    dest: /etc/systemd/system/nomad.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: configure Nomad
+  template:
+    src: config.hcl.j2
+    dest: /etc/nomad.hcl
+    owner: root
+    group: root
+    mode: 0644
+
+- name: start and enable Nomad
+  systemd:
+    unit: nomad.service
+    state: started
+    enabled: yes
